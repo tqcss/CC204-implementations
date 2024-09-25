@@ -1,138 +1,159 @@
-// CODE IMPLEMENTATION FOR FIXED SIZE STACK
+// CODE IMPLEMENTATION FOR A FIXED-SIZE STACK
+// This implementation provides basic operations (push, pop, peek, search, and print) 
+// for a stack with a fixed maximum size. The stack uses a dynamic array to store elements 
+// and keeps track of the current top of the stack using an index.
+
+// Necessary libraries for I/O operations, dynamic memory allocation, and type definitions.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <limits.h>
 
-#define STACK_ERROR INT_MIN
+#define STACK_ERROR INT_MIN // Define a constant value for error handling (returned when stack operations fail).
 
-// DATA STRUCTURE
+// STRUCTURE DEFINITION
 
-typedef struct FStack
-{
-    int topIndex, size;
-    int *bottom;
+// FStack: A structure representing a fixed-size stack.
+// - topIndex: Index of the top element (starts from -1 to indicate an empty stack).
+// - size: The maximum number of elements the stack can hold.
+// - bottom: A dynamically allocated array to store stack elements.
+typedef struct FStack {
+    int topIndex; // Tracks the index of the last element pushed onto the stack.
+    int size;     // Maximum size (capacity) of the stack.
+    int *bottom;  // Pointer to the array that holds the stack's elements.
 } FStack;
 
-// Instantiates a stack with a fixed size.
-FStack *FStack_create(const int size)
-{
+// FUNCTION DECLARATIONS
+
+// Instantiates and allocates memory for a stack of a given fixed size.
+// Returns a pointer to the newly created stack. If memory allocation fails, returns NULL.
+FStack *FStack_create(const int size);
+
+// Deallocates memory used by the stack and its elements.
+// Takes the stack pointer (FStack *) to allow proper nullification.
+// Returns true if the operation was successful, false otherwise.
+bool FStack_delete(FStack *stack);
+
+// Pushes an integer value onto the stack.
+// Returns true if the operation was successful, false if the stack is full or invalid.
+bool FStack_push(FStack *stack, const int value);
+
+// Removes and returns the top element of the stack.
+// Returns STACK_ERROR if the stack is empty or invalid.
+int FStack_pop(FStack *stack);
+
+// Checks if the stack is empty.
+// Returns true if the stack contains no elements, false otherwise.
+bool FStack_isEmpty(FStack *stack);
+
+// Returns the top element of the stack without modifying it.
+// Returns STACK_ERROR if the stack is empty.
+int FStack_peek(FStack *stack);
+
+// Searches for a specific value in the stack and returns its index.
+// The index is zero-based, starting from the bottom of the stack.
+// Returns -1 if the value is not found in the stack.
+int FStack_linearSearch(FStack *stack, const int value);
+
+// Prints the contents of the stack in a human-readable format.
+// Stack elements are enclosed in square brackets, separated by commas.
+// Returns true if successful, false if the stack is NULL.
+bool FStack_print(FStack *stack);
+
+
+// FUNCTION DEFINITIONS
+
+// Instantiates a stack with the specified size, allocates memory for the structure, and initializes members.
+FStack *FStack_create(const int size) {
     FStack *stack = (FStack *)malloc(sizeof(FStack));
     if (!stack)
-        return NULL;
+        return NULL;  // Return NULL if memory allocation fails.
 
-    // define members
     stack->size = size;
-    stack->topIndex = -1;                              // keeps track of the index of the element last added to the stack
-    stack->bottom = (int *)malloc(size * sizeof(int)); // creates an integer array with desired size
+    stack->topIndex = -1;  // The stack is initially empty, so the topIndex is -1.
+    stack->bottom = (int *)malloc(size * sizeof(int)); // Allocate memory for the stack's elements.
 
-    if (stack->bottom == NULL)
-    {
-        free(stack);
+    if (stack->bottom == NULL) {
+        free(stack);  // If element array allocation fails, free the stack structure.
         return NULL;
     }
-    *stack->bottom = 0;
-
     return stack;
 }
 
-// Deletes and deallocates all memory used by stack data structure.
-bool FStack_delete(FStack *stack)
-{
-    if (!stack)
-        return false;
-
-    free(stack->bottom);
-    free(stack);
-    stack = NULL;
+// Frees the memory allocated for the stack's elements and the stack itself.
+// Takes a stack pointer (FStack *) to allow setting the stack pointer to NULL after deallocation.
+bool FStack_delete(FStack *stack) {
+    if (!stack) return false; // Return false if the stack is already NULL.
+    
+    free((stack)->bottom); // Free the memory allocated for the stack's elements.
+    free(stack);           // Free the stack structure itself.
+    stack = NULL;          // Set the stack pointer to NULL to avoid dangling pointers.
+    
     return true;
 }
 
-// OPERATION INITIALIZATIONS
-
-bool FStack_push(FStack *stack, const int value);
-int FStack_pop(FStack *stack);
-bool FStack_isEmpty(FStack *stack);
-int FStack_peek(FStack *stack);
-int FStack_search(FStack *stack, const int value);
-
-// OPERATION DEFINITIONS
-
-// Adds an element on top of stack.
-bool FStack_push(FStack *stack, const int value)
-{
-    if (!stack)
+// Pushes a new element onto the stack.
+// If the stack is full (i.e., topIndex reaches the size limit), it returns false.
+// Otherwise, the element is added, and the topIndex is incremented.
+bool FStack_push(FStack *stack, const int value) {
+    if (!stack || stack->topIndex == stack->size - 1)  // Check if the stack is full or invalid.
         return false;
-
-    if (stack->topIndex == stack->size) // checks if stack is full
-    {
-        return false; // failed to push element to stack as it reached its max capacity
-    }
-    stack->bottom[++stack->topIndex] = value;
+    
+    stack->bottom[++stack->topIndex] = value;  // Increment topIndex and add the value.
     return true;
 }
 
-// Removes the element on top of stack and returns it.
-int FStack_pop(FStack *stack)
-{
-    if (!stack)
+// Removes and returns the top element from the stack.
+// If the stack is empty or NULL, it returns STACK_ERROR.
+int FStack_pop(FStack *stack) {
+    if (!stack || FStack_isEmpty(stack))  // Check if the stack is empty or NULL.
         return STACK_ERROR;
-
-    if (FStack_isEmpty(stack))
-    {
-        return STACK_ERROR; // no elements to pop from stack as it is empty
-    }
-    return stack->bottom[stack->topIndex--];
+    
+    return stack->bottom[stack->topIndex--];  // Return the top element and decrement the topIndex.
 }
 
-// Returns true if stack does not contain any element, false otherwise.
-bool FStack_isEmpty(FStack *stack)
-{
-    if (!stack)
-        return false;
-    return stack->topIndex == -1;
+// Returns true if the stack is empty (i.e., topIndex is -1).
+bool FStack_isEmpty(FStack *stack) {
+    return (!stack || stack->topIndex == -1);  // Stack is empty if topIndex is -1 or stack is NULL.
 }
 
-// Returns the element on top of stack without modifying the stack in any way.
-int FStack_peek(FStack *stack)
-{
+// Returns the element at the top of the stack without modifying it.
+// Returns STACK_ERROR if the stack is empty.
+int FStack_peek(FStack *stack) {
     if (FStack_isEmpty(stack))
         return STACK_ERROR;
-    return stack->bottom[stack->topIndex];
+    
+    return stack->bottom[stack->topIndex];  // Return the element at the top of the stack.
 }
 
-// Searches for a specific element within the stack and returns for its
-// index. If the element being searched was not found in the stack,
-// the function return -1.
-int FStack_search(FStack *stack, const int value)
-{
-    for (int index = 0; index <= stack->topIndex; ++index)
-    {
+// Searches for a specific value within the stack.
+// Iterates through the stack and returns the index of the value if found.
+// If the value is not found, returns -1.
+int FStack_linearSearch(FStack *stack, const int value) {
+    for (int index = 0; index <= stack->topIndex; ++index) {
         if (stack->bottom[index] == value)
-            return index;
+            return index;  // Return the index of the found value.
     }
-    return -1;
+    return -1;  // Return -1 if the value is not found.
 }
 
-// Prints out stacks elements in terminal surrounded by brackets.
-bool FStack_print(FStack *stack)
-{
-    if (!stack) // return false if passed stack is NULL
-        return false;
+// Prints the stack's contents in a readable format.
+// Outputs elements in the form [a, b, c].
+// Returns false if the stack is NULL.
+bool FStack_print(FStack *stack) {
+    if (!stack) return false; // Return false if the stack is NULL.
 
-    if (FStack_isEmpty(stack))
-    {
-        printf("[]\n");
+    if (FStack_isEmpty(stack)) {
+        printf("[]\n");  // Print an empty array if the stack has no elements.
         return true;
     }
 
-    // print each element in stack
+    // Print each element in the stack, separated by commas.
     printf("[");
-    for (int i = 0; i < stack->topIndex; ++i)
-    {
+    for (int i = 0; i < stack->topIndex; ++i) {
         printf("%i, ", stack->bottom[i]);
     }
-    printf("%i]\n", stack->bottom[stack->topIndex]);
+    printf("%i]\n", stack->bottom[stack->topIndex]);  // Print the last element without a trailing comma.
     return true;
 }
 
@@ -293,7 +314,7 @@ int main()
                     continue;
                 }
 
-                printf("Element [%i] was found at index [%i].\n", search, FStack_search(stack, search));
+                printf("Element [%i] was found at index [%i].\n", search, FStack_linearSearch(stack, search));
                 break;
             }
             break;
