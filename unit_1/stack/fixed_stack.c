@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <limits.h>
 
@@ -9,7 +10,6 @@ typedef struct {
     int maxSize;    // size of the array being pointed by *content
     int top;        // index of the top element in the stack
 } FixedStack;
-
 
 FixedStack *new_FixedStack(int size) {
     // Instantiates a stack struct in memory
@@ -23,7 +23,7 @@ FixedStack *new_FixedStack(int size) {
     return stack;
 }
 
-void remove(FixedStack* stack) {
+void delete_DynamicStack(FixedStack* stack) {
     if (stack == NULL) return;
 
     // Deallocates all memory relating to passed stack structure
